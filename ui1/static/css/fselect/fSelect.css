@@ -1,0 +1,256 @@
+/* dev founer feihan */
+
+/* ログ一覧画面表示用 */
+.setting_cnt .fs-wrap{
+    height: 35px;
+    width: 458px;
+}
+.setting_cnt .fs-label-wrap .fs-label {
+    line-height: 35px;
+    height: 35px;
+    width: calc(100% - 45px);
+    padding-left: 5px;
+    padding-right: 40px;
+}
+.setting_cnt .fs-wrap::before {
+    position: absolute;
+    content: "";
+    top: 50%;
+    right: 8px;
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+    border-top: 6px solid #131523;
+    pointer-events: none;
+    transform: translate(-50%, -50%);
+}
+.setting_cnt .fs-wrap:after {
+    position: absolute;
+    content: "";
+    top: 0;
+    right: 35px;
+    bottom: 0;
+    width: 1px;
+    background: #d8d8d8;
+}
+/* ログ一覧画面表示用 */
+.fs-wrap {
+    position: relative;
+    display: inline-block;
+    width: 100%;
+    max-width: 578px;
+    min-width: 245px;
+    font-size: 14px;
+    line-height: 1;
+    height: 45px;
+    background: #fff;
+    border-radius: 6px;
+    border: 1px solid #d8d8d8;
+}
+.fs-wrap::before {
+    position: absolute;
+    content: "";
+    top: 50%;
+    right: 8px;
+    border-left: 8px solid transparent;
+    border-right: 8px solid transparent;
+    border-top: 8px solid #131523;
+    pointer-events: none;
+    transform: translate(-50%, -50%);
+}
+.fs-wrap:after {
+    position: absolute;
+    content: "";
+    top: 0;
+    right: 45px;
+    bottom: 0;
+    width: 1px;
+    background: #d8d8d8;
+}
+.fs-wrap select {
+    color: #454a60;
+    width: 100%;
+    cursor: pointer;
+    text-overflow: ellipsis;
+    border: none;
+    outline: none;
+    background: transparent;
+    background-image: none;
+    box-shadow: none;
+    -webkit-appearance: none;
+    appearance: none;
+    font-size: 14px;
+    padding-left: 30px;
+}
+
+.fs-label-wrap {
+    position: relative;
+    cursor: default;
+}
+
+.fs-label-wrap,
+.fs-dropdown {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+.fs-label-wrap .fs-label {
+    line-height: 45px;
+    width: calc(100% - 85px);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+    height: 45px;
+    font-size: 14px;
+    padding-left: 20px;
+    padding-right: 65px;
+}
+
+.fs-arrow {
+    width: 0;
+    height: 0;
+    border-left: 6px solid transparent;
+    border-right: 6px solid transparent;
+    border-top: 6px solid #000;
+    position: absolute;
+    top: 0;
+    right: 5px;
+    bottom: 0;
+    margin: auto;
+}
+
+.fs-dropdown {
+    position: absolute;
+    background-color: #fff;
+    border: 1px solid #ccc;
+    z-index: 1000;
+    width: calc(100% - 2px);
+}
+
+.fs-dropdown .fs-options {
+    max-height: 200px;
+    overflow: auto;
+}
+.fs-search {
+    display: flex;
+    align-content: center;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.fs-search input {
+    width: calc(100% - 24px);
+    padding: 2px 4px;
+    border: 1px solid #aeaeae;
+}
+
+.fs-selectAll{
+    width: 14px;
+    height: 14px;
+    cursor:pointer;
+}
+.fs-selectAll.selected i{
+    background-color: rgb(17, 169, 17);
+    border-color: transparent;
+    background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAGCAYAAAD+Bd/7AAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAALEgAACxIB0t1+/AAAABx0RVh0U29mdHdhcmUAQWRvYmUgRmlyZXdvcmtzIENTNXG14zYAAABMSURBVAiZfc0xDkAAFIPhd2Kr1WRjcAExuIgzGUTIZ/AkImjSofnbNBAfHvzAHjOKNzhiQ42IDFXCDivaaxAJd0xYshT3QqBxqnxeHvhunpu23xnmAAAAAElFTkSuQmCC');
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+.fs-selectAll i {
+    position: absolute;
+    width: 14px;
+    height: 14px;
+    border: 1px solid #aeaeae;
+    border-radius: 2px;
+    background-color: #fff;
+}
+
+.fs-selectAll:hover{
+    background-color:#eee
+}
+
+.fa-check-square-o:before{
+    content:"\f046"
+}
+
+.fs-option,
+.fs-search,
+.fs-optgroup-label {
+    padding: 6px 8px;
+    /*border-bottom: 1px solid #eee;*/
+    cursor: default;
+}
+
+.fs-option {
+    cursor: pointer;
+}
+
+.fs-option.hl {
+    background-color: #f5f5f5;
+}
+
+.fs-wrap.multiple .fs-option {
+    position: relative;
+    padding-left: 30px;
+}
+
+.fs-wrap.multiple .fs-checkbox {
+    position: absolute;
+    display: block;
+    width: 30px;
+    top: 0;
+    left: 0;
+    bottom: 0;
+}
+
+.fs-wrap.multiple .fs-option .fs-checkbox i {
+    position: absolute;
+    margin: auto;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    width: 14px;
+    height: 14px;
+    border: 1px solid #aeaeae;
+    border-radius: 2px;
+    background-color: #fff;
+}
+
+.fs-wrap.multiple .fs-option.selected .fs-checkbox i {
+    background-color: rgb(17, 169, 17);
+    border-color: transparent;
+    background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAGCAYAAAD+Bd/7AAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAALEgAACxIB0t1+/AAAABx0RVh0U29mdHdhcmUAQWRvYmUgRmlyZXdvcmtzIENTNXG14zYAAABMSURBVAiZfc0xDkAAFIPhd2Kr1WRjcAExuIgzGUTIZ/AkImjSofnbNBAfHvzAHjOKNzhiQ42IDFXCDivaaxAJd0xYshT3QqBxqnxeHvhunpu23xnmAAAAAElFTkSuQmCC');
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+.fs-wrap .fs-option:hover {
+    background-color: #f5f5f5;
+}
+
+.fs-optgroup-label {
+    font-weight: bold;
+}
+
+.hidden {
+    display: none;
+}
+
+.fs-select-center {
+    display: flex;
+    align-content: center;
+    align-items: center
+}
+
+.fs-select-th-center {
+    vertical-align: middle;
+    padding-bottom: 40px;
+}
+
+.fs-label-wrap_disabled {
+    background: #cccccc;
+    pointer-events: none;
+}

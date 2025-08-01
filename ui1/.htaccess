@@ -1,0 +1,28 @@
+#php_flag display_errors Off
+
+RewriteEngine On
+
+# SSL
+#RewriteCond %{HTTPS} off
+#RewriteRule ^(.*)$ https://local.paketen.jp/$1 [R=301,L]
+
+# Procedural PHP
+RewriteCond %{REQUEST_FILENAME} -s [OR]
+RewriteCond %{REQUEST_FILENAME} -l [OR]
+RewriteCond %{REQUEST_FILENAME} -d
+RewriteRule ^.*$ - [NC,L]
+RewriteCond %{REQUEST_URI}::$1 ^(/.+)(.+)::\2$
+RewriteRule ^(.*) - [E=BASE:%1]
+RewriteRule ^(.*)$ %{ENV:BASE}index.php [NC,L]
+
+#メモリ使用量の上限
+#php_value memory_limit 200M
+
+#POSTデータの最大サイズ　※合計サイズ
+#php_value post_max_size 1200M
+
+#1ファイルあたりの最大アップロードサイズ
+#php_value upload_max_filesize 1200M
+
+
+

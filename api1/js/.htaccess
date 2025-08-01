@@ -1,0 +1,3 @@
+RewriteEngine Off
+Order deny,allow
+allow from all
