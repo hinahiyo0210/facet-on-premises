@@ -510,6 +510,18 @@ function extract(a) {
         b.src = $(this).prevAll(".attr-image-file").val() + "?" + new Date().getTime();
     });
 
+    a.find(".upload-img-file").change(function () {
+        const file = this.files[0];
+        if (!file) return;
+
+        const img  = a.find(".attr-image-load").nextAll(".attr-image").get(0);
+        const prev = a.find(".attr-image-load").nextAll(".attr-image-preview").get(0);
+        if (!img) return;
+
+        img.src  = URL.createObjectURL(file);
+        prev.src = URL.createObjectURL(file);
+    });
+
     a.find(":text")
         .click(function () {
             $(this).focus();
