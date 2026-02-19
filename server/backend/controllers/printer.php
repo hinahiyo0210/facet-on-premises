@@ -141,16 +141,15 @@ class PrinterController {
     $log = new LOG();
     $post = $this->request_body;
 
-    $id = isset($post["id"]) ? $post["id"] : null;
+    $id = isset($post["old_printer_id"]) ? $post["old_printer_id"] : null;
 
     $log->info($_SERVER["PHP_AUTH_USER"], "設定保存開始:{\"params\":".json_encode($post)."}", date('Y-m-d H:i:s'));
     // ＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝設定の保存＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝
-    if ($id === null) {
+    if (empty($id)) {
       // 新規登録処理
       $db = new DB("on-premises");
-      $sql = "INSERT INTO t_printer_settings (contractor_id, is_enabled, printer_id, printer_name, printer_ip, port, print_timeout_ms, print_xml) VALUES (1, 1, :printer_id, :printer_name, :printer_ip, :port, :print_timeout_ms, :print_xml)";
+      $sql = "INSERT INTO t_printer_settings (contractor_id, is_enabled, printer_name, printer_ip, port, print_timeout_ms, print_xml) VALUES (1, 1, :printer_name, :printer_ip, :port, :print_timeout_ms, :print_xml)";
       $sth = $db->pdo()->prepare($sql);
-      $sth->bindValue(":printer_id", $post["printer_id"]);
       $sth->bindValue(":printer_name", $post["printer_name"]);
       $sth->bindValue(":printer_ip", $post["printer_ip"]);
       $sth->bindValue(":port", $post["port"]);
@@ -160,19 +159,27 @@ class PrinterController {
     } else {
       // 更新処理
       $db = new DB("on-premises");
-      $sql = "UPDATE t_printer_settings SET printer_id = :printer_id, printer_name = :printer_name, printer_ip = :printer_ip, port = :port, print_timeout_ms = :print_timeout_ms, print_xml = :print_xml WHERE contractor_id = 1 AND id = :id";
+      $sql = "UPDATE t_printer_settings SET printer_name = :printer_name, printer_ip = :printer_ip, port = :port, print_timeout_ms = :print_timeout_ms, print_xml = :print_xml WHERE contractor_id = 1 AND printer_id = :printer_id";
       $sth = $db->pdo()->prepare($sql);
-      $sth->bindValue(":printer_id", $post["printer_id"]);
       $sth->bindValue(":printer_name", $post["printer_name"]);
       $sth->bindValue(":printer_ip", $post["printer_ip"]);
       $sth->bindValue(":port", $post["port"]);
       $sth->bindValue(":print_timeout_ms", $post["print_timeout_ms"]);
       $sth->bindValue(":print_xml", $post["print_xml"]);
-      $sth->bindValue(":id", $id);
+      $sth->bindValue(":printer_id", $id);
       $res = $sth->execute();
     }
 
     if($res){
+      // 新規の場合はIDを取得
+      if(empty($id)){
+        $db  = new DB("on-premises");
+        $sql = "SELECT printer_id FROM t_printer_settings WHERE contractor_id = 1 ORDER BY printer_id DESC LIMIT 1";
+        $sth = $db->pdo()->prepare($sql);
+        $sth->execute();
+        $printer_id = $sth->fetch(PDO::FETCH_ASSOC);
+        $printer_id = $printer_id["printer_id"];
+      }
       $log->info($_SERVER["PHP_AUTH_USER"], "設定保存の成功:{\"params\":".json_encode($post)."}", date('Y-m-d H:i:s'));
     }else{
       $log->error($_SERVER["PHP_AUTH_USER"], "設定保存の失敗:{\"params\":".json_encode($post)."}", date('Y-m-d H:i:s'));
@@ -182,31 +189,35 @@ class PrinterController {
       ]];
     }
 
-    // ＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝連携設定の保存＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝
-    // 既存設定の削除
-    $db = new DB("on-premises");
-    $sql = "DELETE FROM t_printer_linked_devices WHERE printer_id = :printer_id";
-    $sth = $db->pdo()->prepare($sql);
-    $sth->bindValue(":printer_id", $post["old_printer_id"]);
-    $res = $sth->execute();
-    if($res){
-      $log->info($_SERVER["PHP_AUTH_USER"], "連携設定削除の成功:{\"params\":".json_encode($post)."}", date('Y-m-d H:i:s'));
-    }else{
-      $log->error($_SERVER["PHP_AUTH_USER"], "連携設定削除の失敗:{\"params\":".json_encode($post)."}", date('Y-m-d H:i:s'));
+    // ＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝連携設定の削除・保存＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝
+    if (!empty($id)) {
+      // 既存設定の削除
+      $db = new DB("on-premises");
+      $sql = "DELETE FROM t_printer_linked_devices WHERE printer_id = :printer_id";
+      $sth = $db->pdo()->prepare($sql);
+      $sth->bindValue(":printer_id", $id);
+      $res = $sth->execute();
+      if($res){
+        $log->info($_SERVER["PHP_AUTH_USER"], "連携設定削除の成功:{\"params\":".json_encode($post)."}", date('Y-m-d H:i:s'));
+      }else{
+        $log->error($_SERVER["PHP_AUTH_USER"], "連携設定削除の失敗:{\"params\":".json_encode($post)."}", date('Y-m-d H:i:s'));
+      }
     }
     
     // 新しい設定の登録
     $db = new DB("on-premises");
+    // 新規の場合もID格納
+    $id = ($id == null) ? $printer_id : $id;
     foreach ($post["device_ids"] as $device_id) {
       $sql = "INSERT INTO t_printer_linked_devices (printer_id, device_id) VALUES (:printer_id, :device_id)";
       $sth = $db->pdo()->prepare($sql);
-      $sth->bindValue(":printer_id", $post["printer_id"]);
+      $sth->bindValue(":printer_id", $id);
       $sth->bindValue(":device_id", $device_id);
       $res = $sth->execute();
       if($res){
-        $log->info($_SERVER["PHP_AUTH_USER"], "連携設定登録の成功:{\"printerID\":".$post["printer_id"].",\"deviceID\":".$device_id."}", date('Y-m-d H:i:s'));
+        $log->info($_SERVER["PHP_AUTH_USER"], "連携設定登録の成功:{\"printerID\":".$id.",\"deviceID\":".$device_id."}", date('Y-m-d H:i:s'));
       }else{
-        $log->error($_SERVER["PHP_AUTH_USER"], "連携設定登録の失敗:{\"printerID\":".$post["printer_id"].",\"deviceID\":".$device_id."}", date('Y-m-d H:i:s'));
+        $log->error($_SERVER["PHP_AUTH_USER"], "連携設定登録の失敗:{\"printerID\":".$id.",\"deviceID\":".$device_id."}", date('Y-m-d H:i:s'));
       }
     }
 
@@ -214,7 +225,7 @@ class PrinterController {
       $log->info($_SERVER["PHP_AUTH_USER"], "プリンタPOST処理の成功:{\"params\":".json_encode($post)."}", date('Y-m-d H:i:s'));
       return [
         "msg" => "プリンター設定の更新完了",
-        "printer_id" => $post["printer_id"]
+        "printer_id" => $id
       ];
     }else{
       $log->error($_SERVER["PHP_AUTH_USER"], "プリンタPOST処理の失敗:{\"params\":".json_encode($post)."}", date('Y-m-d H:i:s'));
@@ -234,7 +245,7 @@ class PrinterController {
 
     $id = isset($post["id"]) ? $post["id"] : null;
 
-    $log->info($_SERVER["PHP_AUTH_USER"], "設定削除開始:{\"params\":".json_encode($post)."}", date('Y-m-d H:i:s'));
+    $log->info($_SERVER["PHP_AUTH_USER"], "設定削除開始:{\"params\":{\"id\":\"".$id."\"}}", date('Y-m-d H:i:s'));
     // ＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝設定の保存＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝
     if ($id === null) {
       $log->error($_SERVER["PHP_AUTH_USER"], "プリンタDELETE処理の失敗:{\"params\":".json_encode($post)."}", date('Y-m-d H:i:s'));
@@ -245,7 +256,7 @@ class PrinterController {
     } else {
       // 更新処理
       $db = new DB("on-premises");
-      $sql = "DELETE FROM t_printer_settings WHERE contractor_id = 1 AND id = :id";
+      $sql = "DELETE FROM t_printer_settings WHERE contractor_id = 1 AND printer_id = :id";
       $sth = $db->pdo()->prepare($sql);
       $sth->bindValue(":id", $id);
       $res = $sth->execute();
