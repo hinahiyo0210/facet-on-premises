@@ -897,7 +897,87 @@ class RecogLogService {
 		
 		return base64_decode($picRet["data"]);
 	}
-	
-	
+
+	public static function execPrinterAPI(array $device, array $recogData) {
+
+		$linked_printers = DB::selectArray("
+			select
+				*
+			from
+				t_printer_linked_devices
+			where 
+				device_id = {device_id} 
+		", $device);
+
+		foreach ($linked_printers as $value) {
+
+			// 連携プリンターごとに処理開始
+			$printer = DB::selectRow("
+			select
+				*
+			from
+				t_printer_settings
+			where 
+				printer_id = {printer_id}
+			", $value);
+
+			$printer_id 	= $printer["printer_id"];
+			$is_enabled 	= $printer["is_enabled"];
+			$printer_name = $printer["printer_name"];
+			$printer_ip 	= $printer["printer_ip"];
+			$printer_port = $printer["printer_port"];
+			$timeout    	= $printer["print_timeout_ms"] ?? 10000;
+			$xml 					= $printer["print_xml"];
+
+			if (empty($xml)) {
+				infoLog("プリンターAPIの呼び出しに失敗：printer_id[{$printer_id}]のXMLテンプレートが空です。");
+				continue;
+			}
+
+			if (!$is_enabled) {
+				infoLog("プリンターAPIの呼び出しに失敗：printer_id[{$printer_id}]は無効になっています。");
+				continue;
+			}
+			
+			// 変数内容の変換
+			$accessTypeText;
+			switch ($recogData["access_type"] ?? "") {
+				case "Face": $accessTypeText = "顔認証"; break;
+				case "Card": $accessTypeText = "カード認証"; break;
+				case "FaceAndCard": $accessTypeText = "顔＋カード認証"; break;
+				case "FirstCardAndFace": $accessTypeText = "カード先行顔認証"; break;
+				default: $accessTypeText = "不明"; break;
+			};
+
+			// プレースホルダーの置換
+			$xml = str_replace("{recog_time}", $recogData["recog_time"] ?? "", $xml);
+			$xml = str_replace("{person_name}", $recogData["person_name"] ?? "未登録者", $xml);
+			$xml = str_replace("{person_code}", $recogData["person_code"] ?? "unknown", $xml);
+			$xml = str_replace("{access_type}", $accessTypeText, $xml);
+			$xml = str_replace("{card_no}", $recogData["card_no"] ?? "", $xml);
+			$xml = str_replace("{temperature}", $recogData["temperature"] ?? "", $xml);
+			$xml = str_replace("{person_description1}", $recogData["person_description1"] ?? "", $xml);
+			$xml = str_replace("{person_description2}", $recogData["person_description2"] ?? "", $xml);
+
+			// 送信処理開始
+			$url = "http://{$printer_ip}:{$printer_port}/cgi-bin/epos/service.cgi?devid={$printer_id}&timeout={$timeout}";
+			$ch = curl_init($url);
+			curl_setopt($ch, CURLOPT_POST, true);
+			curl_setopt($ch, CURLOPT_HTTPHEADER, [
+					"Content-Type: text/xml; charset=utf-8"
+			]);
+			curl_setopt($ch, CURLOPT_POSTFIELDS, $xml);
+			curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+			$response = curl_exec($ch);
+			if (curl_errno($ch)) {
+				infoLog("プリンターAPIの呼び出しに失敗：printer_id[{$printer_id}], printer_ip[{$printer_ip}:{$printer_port}], error[".curl_error($ch)."]");
+			} else {
+				infoLog("プリンターAPIの呼び出しに成功：printer_id[{$printer_id}], printer_ip[{$printer_ip}:{$printer_port}], response[{$response}]");
+			}
+			curl_close($ch);
+
+		}
+
+	}
 	
 }
