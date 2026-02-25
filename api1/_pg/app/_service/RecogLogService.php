@@ -925,11 +925,11 @@ class RecogLogService {
 			$is_enabled 	= $printer["is_enabled"];
 			$printer_name = $printer["printer_name"];
 			$printer_ip 	= $printer["printer_ip"];
-			$printer_port = $printer["printer_port"];
+			$printer_port = $printer["port"];
 			$timeout    	= $printer["print_timeout_ms"] ?? 10000;
-			$xml 					= $printer["print_xml"];
+			$xml_template = $printer["print_xml"];
 
-			if (empty($xml)) {
+			if (empty($xml_template)) {
 				infoLog("プリンターAPIの呼び出しに失敗：printer_id[{$printer_id}]のXMLテンプレートが空です。");
 				continue;
 			}
@@ -949,6 +949,10 @@ class RecogLogService {
 				default: $accessTypeText = "不明"; break;
 			};
 
+			$xml 	= '<?xml version="1.0" encoding="utf-8"?><s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/"><s:Body>';
+			$xml .= $xml_template;
+			$xml .= '</s:Body></s:Envelope>';
+
 			// プレースホルダーの置換
 			$xml = str_replace("{recog_time}", $recogData["recog_time"] ?? "", $xml);
 			$xml = str_replace("{person_name}", $recogData["person_name"] ?? "未登録者", $xml);
@@ -960,7 +964,7 @@ class RecogLogService {
 			$xml = str_replace("{person_description2}", $recogData["person_description2"] ?? "", $xml);
 
 			// 送信処理開始
-			$url = "http://{$printer_ip}:{$printer_port}/cgi-bin/epos/service.cgi?devid={$printer_id}&timeout={$timeout}";
+			$url = "http://{$printer_ip}/cgi-bin/epos/service.cgi?devid=local_printer&timeout={$timeout}";
 			$ch = curl_init($url);
 			curl_setopt($ch, CURLOPT_POST, true);
 			curl_setopt($ch, CURLOPT_HTTPHEADER, [
@@ -970,9 +974,9 @@ class RecogLogService {
 			curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 			$response = curl_exec($ch);
 			if (curl_errno($ch)) {
-				infoLog("プリンターAPIの呼び出しに失敗：printer_id[{$printer_id}], printer_ip[{$printer_ip}:{$printer_port}], error[".curl_error($ch)."]");
+				infoLog("プリンターAPIの呼び出しに失敗：printer_id[{$printer_id}], printer_ip[{$printer_ip}], error[".curl_error($ch)."]");
 			} else {
-				infoLog("プリンターAPIの呼び出しに成功：printer_id[{$printer_id}], printer_ip[{$printer_ip}:{$printer_port}], response[{$response}]");
+				infoLog("プリンターAPIの呼び出しに成功：printer_id[{$printer_id}], printer_ip[{$printer_ip}], response[{$response}]");
 			}
 			curl_close($ch);
 
