@@ -35,8 +35,8 @@ $(function () {
 
         e = h.getItem("devid");
         if (e) {
-            $("#setting-devid").val(e);
-            f = e;
+            $("#setting-devid").val('local_printer');
+            f = 'local_printer';
         }
 
         e = h.getItem("timeout");
@@ -388,7 +388,7 @@ $(function () {
             j.setItem("width", $("#setting-width").val());
             j.setItem("ipaddr", $("#setting-ipaddr").val());
             j.setItem("port", $("#setting-port").val());
-            j.setItem("devid", $("#setting-devid").val());
+            j.setItem("devid", 'local_printer');
             j.setItem("timeout", $("#setting-timeout").val());
             j.setItem("status", $("#setting-status").is(":checked"));
             // j.setItem("jobid", $("#setting-jobid").is(":checked"));
