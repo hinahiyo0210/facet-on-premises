@@ -146,6 +146,20 @@ class PrinterController {
     $log->info($_SERVER["PHP_AUTH_USER"], "設定保存開始:{\"params\":".json_encode($post)."}", date('Y-m-d H:i:s'));
     // ＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝設定の保存＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝
     if (empty($id)) {
+      // 台数チェック
+      $allowed_printers = 30; // 1契約あたりの最大プリンター登録数
+      $db = new DB("on-premises");
+      $sql = "SELECT COUNT(*) as cnt FROM t_printer_settings WHERE contractor_id = 1";
+      $sth = $db->pdo()->prepare($sql);
+      $sth->execute();
+      $count = $sth->fetch(PDO::FETCH_ASSOC);
+      if($count["cnt"] >= $allowed_printers){
+        $log->error($_SERVER["PHP_AUTH_USER"], "プリンター設定の保存失敗:台数上限超過", date('Y-m-d H:i:s'));
+        $this->code = 400;
+        return ["error" => [
+          "msg" => "プリンターは{$allowed_printers}台まで登録可能です"
+        ]];
+      }
       // 新規登録処理
       $db = new DB("on-premises");
       $sql = "INSERT INTO t_printer_settings (contractor_id, is_enabled, printer_name, printer_ip, port, print_timeout_ms, print_xml) VALUES (1, 1, :printer_name, :printer_ip, :port, :print_timeout_ms, :print_xml)";
