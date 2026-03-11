@@ -180,11 +180,12 @@ $(function () {
         }
     });
 
-    $("#edit-clear")
-        .button()
-        .click(function () {
-            $("#edit-confirm").dialog("open");
-        });
+    $(document).on("mouseup", "#edit-clear", function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        $("#edit-confirm").dialog("open");
+    });
 
     $("#edit-confirm").dialog({
         autoOpen: false,
@@ -213,12 +214,13 @@ $(function () {
         modal: true
     });
 
-    $("#edit-import")
-        .button()
-        .click(function () {
-            $("#import-doc, #import-info").val("");
-            $("#import").dialog("open");
-        });
+    $(document).on("mouseup", "#edit-import", function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        $("#import-doc, #import-info").val("");
+        $("#import").dialog("open");
+    });
 
     $("#import").dialog({
         autoOpen: false,
